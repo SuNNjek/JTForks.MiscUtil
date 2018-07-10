@@ -24,6 +24,10 @@ namespace MiscUtil.IO
 		/// Buffer used for Write(char)
 		/// </summary>
 		char[] charBuffer = new char[1];
+		/// <summary>
+		/// Whether or not to leave the stream open after disposing
+		/// </summary>
+		bool leaveOpen;
 		#endregion
 
 		#region Constructors
@@ -34,7 +38,7 @@ namespace MiscUtil.IO
 		/// <param name="bitConverter">Converter to use when writing data</param>
 		/// <param name="stream">Stream to write data to</param>
 		public EndianBinaryWriter (EndianBitConverter bitConverter,
-			Stream stream) : this (bitConverter, stream, Encoding.UTF8)
+			Stream stream) : this (bitConverter, stream, Encoding.UTF8, false)
 		{
 		}
 
@@ -45,7 +49,20 @@ namespace MiscUtil.IO
 		/// <param name="bitConverter">Converter to use when writing data</param>
 		/// <param name="stream">Stream to write data to</param>
 		/// <param name="encoding">Encoding to use when writing character data</param>
-		public EndianBinaryWriter (EndianBitConverter bitConverter,	Stream stream, Encoding encoding)
+		public EndianBinaryWriter (EndianBitConverter bitConverter, Stream stream, Encoding encoding)
+			: this (bitConverter, stream, encoding, false)
+		{
+		}
+
+		/// <summary>
+		/// Constructs a new binary writer with the given bit converter, writing
+		/// to the given stream, using the given encoding. Can optionally leave the stream open after disposing if desired.
+		/// </summary>
+		/// <param name="bitConverter">Converter to use when writing data</param>
+		/// <param name="stream">Stream to write data to</param>
+		/// <param name="encoding">Encoding to use when writing character data</param>
+		/// <param name="leaveOpen">Whether or not to leave the stream open after disposing</param>
+		public EndianBinaryWriter (EndianBitConverter bitConverter,	Stream stream, Encoding encoding, bool leaveOpen)
 		{
 			if (bitConverter==null)
 			{
@@ -66,6 +83,7 @@ namespace MiscUtil.IO
 			this.stream = stream;
 			this.bitConverter = bitConverter;
 			this.encoding = encoding;
+			this.leaveOpen = leaveOpen;
 		}
 		#endregion
 
@@ -384,7 +402,9 @@ namespace MiscUtil.IO
 			{
 				Flush();
 				disposed = true;
-				((IDisposable)stream).Dispose();
+
+				if (!leaveOpen)
+					((IDisposable)stream).Dispose();
 			}
 		}
 		#endregion

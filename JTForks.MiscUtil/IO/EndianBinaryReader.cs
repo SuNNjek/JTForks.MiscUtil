@@ -33,6 +33,10 @@ namespace MiscUtil.IO
 		/// Minimum number of bytes used to encode a character
 		/// </summary>
 		int minBytesPerChar;
+		/// <summary>
+		/// Whether or not to leave the stream open after disposing
+		/// </summary>
+		bool leaveOpen;
 		#endregion
 
 		#region Constructors
@@ -43,7 +47,7 @@ namespace MiscUtil.IO
 		/// <param name="bitConverter">Converter to use when reading data</param>
 		/// <param name="stream">Stream to read data from</param>
 		public EndianBinaryReader (EndianBitConverter bitConverter,
-								   Stream stream) : this (bitConverter, stream, Encoding.UTF8)
+								   Stream stream) : this (bitConverter, stream, Encoding.UTF8, false)
 		{
 		}
 
@@ -54,7 +58,20 @@ namespace MiscUtil.IO
 		/// <param name="bitConverter">Converter to use when reading data</param>
 		/// <param name="stream">Stream to read data from</param>
 		/// <param name="encoding">Encoding to use when reading character data</param>
-		public EndianBinaryReader (EndianBitConverter bitConverter,	Stream stream, Encoding encoding)
+		public EndianBinaryReader (EndianBitConverter bitConverter, Stream stream, Encoding encoding)
+			: this (bitConverter, stream, encoding, false)
+		{
+		}
+
+		/// <summary>
+		/// Constructs a new binary reader with the given bit converter, reading
+		/// to the given stream, using the given encoding. Can optionally leave the stream open after disposing if desired.
+		/// </summary>
+		/// <param name="bitConverter">Converter to use when reading data</param>
+		/// <param name="stream">Stream to read data from</param>
+		/// <param name="encoding">Encoding to use when reading character data</param>
+		/// <param name="leaveOpen">Whether or not to leave the stream open after disposing</param>
+		public EndianBinaryReader (EndianBitConverter bitConverter,	Stream stream, Encoding encoding, bool leaveOpen)
 		{
 			if (bitConverter==null)
 			{
@@ -75,6 +92,7 @@ namespace MiscUtil.IO
 			this.stream = stream;
 			this.bitConverter = bitConverter;
 			this.encoding = encoding;
+			this.leaveOpen = leaveOpen;
 			this.decoder = encoding.GetDecoder();
 			this.minBytesPerChar = 1;
 
@@ -591,7 +609,9 @@ namespace MiscUtil.IO
 			if (!disposed)
 			{
 				disposed = true;
-				((IDisposable)stream).Dispose();
+
+				if (!leaveOpen)
+					((IDisposable)stream).Dispose();
 			}
 		}
 		#endregion
